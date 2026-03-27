@@ -1,0 +1,80 @@
+---
+import { getCollection, render } from 'astro:content';
+import { SITE_TITLE } from '../consts';
+import '../styles/global.css';
+
+export async function getStaticPaths() {
+	const posts = await getCollection('blog');
+	return posts.map((post) => ({
+		params: { slug: post.id },
+		props: post,
+	}));
+}
+
+const post = Astro.props;
+const { Content } = await render(post);
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin />
+		<link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin />
+		<title>{post.data.title} — {SITE_TITLE}</title>
+		<meta name="description" content={post.data.description} />
+	</head>
+	<body>
+		<main>
+			<article>
+				<a href="/" class="back">← Back</a>
+				<div class="post-header">
+					<time datetime={post.data.pubDate.toISOString()}>
+						{post.data.pubDate.toLocaleDateString('en-us', {
+							year: 'numeric',
+							month: 'long',
+							day: 'numeric',
+						})}
+					</time>
+					<h1>{post.data.title}</h1>
+				</div>
+				<div class="prose">
+					<Content />
+				</div>
+			</article>
+		</main>
+	</body>
+</html>
+
+<style>
+	.back {
+		display: inline-block;
+		margin-bottom: 2em;
+		font-size: 0.9em;
+	}
+	.post-header {
+		margin-bottom: 2em;
+	}
+	.post-header time {
+		color: rgb(var(--gray));
+		font-size: 0.85em;
+	}
+	.post-header h1 {
+		font-size: 2.2em;
+		margin: 0.25em 0 0;
+	}
+	.prose :global(h2) {
+		font-size: 1.4em;
+		margin-top: 2em;
+	}
+	.prose :global(h3) {
+		font-size: 1.2em;
+		margin-top: 1.5em;
+	}
+	.prose :global(pre) {
+		background-color: rgb(var(--gray-dark));
+		color: rgb(var(--gray-light));
+	}
+</style>
