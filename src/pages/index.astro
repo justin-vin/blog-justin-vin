@@ -21,7 +21,7 @@ const posts = (await getCollection('blog')).sort(
 	</head>
 	<body>
 		<main>
-			<h1 class="site-title">{SITE_TITLE}</h1>
+			<h1 class="site-title"><a href="https://justin.vin" class="home-link">←</a> {SITE_TITLE}</h1>
 			<ul class="post-list">
 				{posts.map((post) => (
 					<li>
@@ -49,6 +49,11 @@ const posts = (await getCollection('blog')).sort(
 	.site-title {
 		font-size: 2em;
 		margin-bottom: 2em;
+	}
+	.home-link {
+		text-decoration: none;
+		margin-right: 0.3em;
+		font-size: 0.8em;
 	}
 	.post-list {
 		list-style: none;
