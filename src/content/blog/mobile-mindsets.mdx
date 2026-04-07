@@ -1,6 +1,6 @@
 ---
 title: 'Running My Life From Voice Messages'
-description: 'I ordered mushrooms, analyzed bank statements, debugged a crash, and produced videos — all from Discord voice messages on my phone. Here''s how one AI identity with five thinking modes turns voice into action.'
+description: 'How I built a system where one AI identity with five thinking modes runs my entire life from Discord voice messages on my phone. The architecture, the UX decisions, and what it actually looks like.'
 pubDate: 'Apr 07 2026'
 ---
 
@@ -35,7 +35,7 @@ pubDate: 'Apr 07 2026'
               <div class="msg-avatar accent-avatar">J</div>
               <div class="msg-content">
                 <span class="msg-author accent-name">Justin <span class="bot-tag">BOT</span></span>
-                <div class="msg-text">On it. Opening thread in #pa — I'll get the mushrooms ordered.</div>
+                <div class="msg-text">On it. Opening a thread in #pa for the mushroom order.</div>
               </div>
             </div>
             <div class="typing-indicator">
@@ -51,266 +51,310 @@ pubDate: 'Apr 07 2026'
     <div class="hero-text">
       <p class="hero-kicker">A day in the life</p>
       <h2 class="hero-title">I run my life from<br/><span class="accent-text">voice messages</span></h2>
-      <p class="hero-sub">Mushrooms ordered. Bank statements analyzed. Crashes debugged. Videos produced. All from my phone, all through one AI.</p>
+      <p class="hero-sub">Mushrooms ordered. Bank statements analyzed. Crashes debugged. Videos produced. Pharmacy refills submitted. All from my phone, all through one AI.</p>
     </div>
   </div>
 </section>
 
 ---
 
-Here's what my Monday looked like:
+Here's what my Monday looked like.
 
-I woke up, grabbed my phone, and started talking. Not typing commands into a terminal. Not writing prompts in ChatGPT. Just... talking to Discord, the same way I'd talk to a friend.
+I woke up, grabbed my phone, and started talking. Not typing commands into a terminal. Not crafting prompts in ChatGPT. Just holding the Discord mic button and saying what I needed, the same way I'd send a voice note to a friend.
 
-By the end of the day, my AI had ordered mushrooms from my local shop, analyzed my bank statements for unnecessary spending, debugged an infrastructure crash, produced a series of algorithm visualization videos, drafted messages to friends, and submitted a pharmacy refill — all routed to the right "department" automatically.
+By the end of the day, Justin — my AI — had ordered mushrooms from my local shop, analyzed my bank statements and found £47/month in wasted subscriptions, debugged an infrastructure crash, produced a series of [algorithm visualization videos](https://youtube.com/@justinvinai), drafted messages to friends, submitted a pharmacy refill, and started tracking an HMRC payment deadline.
 
-No app switching. No context. Just voice.
+No app switching. No laptop. Just voice messages from my phone while I went about my day.
 
-## The Flow
+This post is about how that system works — not as a concept, but as the thing I actually use every day. The architecture, the UX decisions, the trade-offs, and what it genuinely looks like when your Discord sidebar is an AI operating system.
 
-Every voice message follows the same path. I talk, and things happen.
+## The Interface Is the Thread List
+
+Here's the thing nobody talks about with AI agents: **the interface matters more than the model.**
+
+I could have the smartest AI in the world, but if I have to SSH into a server to talk to it, I won't use it. If I need to open a specific app and type structured prompts, I'll use it sometimes. But if I can just talk to my phone while walking to the bus? I'll use it for everything.
+
+Discord's mobile app is genuinely good for this. The voice recording UX is a single button press — hold, speak, release. Attachments work. Notifications are reliable. And the forum/thread structure gives me something no other chat app does: **a visual dashboard of everything that's happening.**
+
+Here's what my Discord actually looks like right now:
+
+<div class="forum-simulation reveal">
+  <div class="forum-header">
+    <div class="forum-tabs">
+      <span class="forum-tab active">🗂️ pa</span>
+      <span class="forum-tab">💰 finance</span>
+      <span class="forum-tab">🛠️ design-engineer</span>
+      <span class="forum-tab">🔧 infra</span>
+      <span class="forum-tab">🎭 wordware</span>
+    </div>
+  </div>
+  <div class="forum-threads">
+    <div class="thread-item" data-status="done">
+      <div class="thread-title">✅ Pharmacy refill submitted</div>
+      <div class="thread-meta">
+        <span class="thread-status status-active">Active</span>
+        <span class="thread-time">2 min ago</span>
+      </div>
+      <div class="thread-snippet">Boots online refill submitted. Confirmation #RF-4821. Pickup available tomorrow after 2pm.</div>
+    </div>
+    <div class="thread-item" data-status="active">
+      <div class="thread-title">👋 Group meetup message</div>
+      <div class="thread-meta">
+        <span class="thread-status status-idle">Idle</span>
+        <span class="thread-time">15 min ago</span>
+      </div>
+      <div class="thread-snippet">Draft ready for review. Suggested Saturday at the usual place, casual tone.</div>
+    </div>
+    <div class="thread-item" data-status="done">
+      <div class="thread-title">✅ Hedgehog sent</div>
+      <div class="thread-meta">
+        <span class="thread-status status-idle">Idle</span>
+        <span class="thread-time">1h ago</span>
+      </div>
+      <div class="thread-snippet">Message delivered via iMessage. Read receipt confirmed.</div>
+    </div>
+    <div class="thread-item" data-status="active">
+      <div class="thread-title">✍️ Jonatan draft</div>
+      <div class="thread-meta">
+        <span class="thread-status status-idle">Idle</span>
+        <span class="thread-time">2h ago</span>
+      </div>
+      <div class="thread-snippet">Email draft sitting in review. Waiting for your go-ahead to send.</div>
+    </div>
+  </div>
+</div>
+
+Those thread names? That's the entire UI. When I glance at my phone, I see `✅ Pharmacy refill submitted` and I know it's done. I see `✍️ Jonatan draft` and I know there's something waiting for me. The emoji tells me the state: ✅ means done, ✍️ means draft ready, ⏳ means waiting on something external, 🔄 means it's actively working.
+
+**The thread names are the product.** Justin renames them constantly — when a task starts, when the status changes, when it completes. The title goes from `🍄 Mushroom order` to `⏳ Awaiting delivery confirmation` to `✅ Mushrooms arriving Tuesday`. I never have to open the thread to know where things stand. The forum list *is* my dashboard.
+
+## How Routing Actually Works
+
+When I send a voice message to Justin, here's what happens under the hood:
 
 <div class="flow-container reveal">
-  <div class="flow-step" data-step="1">
+  <div class="flow-card">
+    <div class="flow-num">1</div>
     <div class="flow-icon">🎙️</div>
-    <div class="flow-label">Voice Message</div>
-    <div class="flow-detail">Hold the mic button on Discord mobile. Say what you need. Release.</div>
+    <div class="flow-label">Voice In</div>
+    <div class="flow-detail">I hold the mic button on Discord mobile. Say what I need. Release. Discord sends the audio.</div>
   </div>
-  <div class="flow-arrow">→</div>
-  <div class="flow-step" data-step="2">
+  <div class="flow-card">
+    <div class="flow-num">2</div>
     <div class="flow-icon">📝</div>
     <div class="flow-label">Transcription</div>
-    <div class="flow-detail">Whisper converts speech to text. Handles accents, background noise, mid-thought corrections.</div>
+    <div class="flow-detail">OpenAI Whisper converts speech to text. Handles my accent, background noise, mid-sentence corrections. Usually perfect.</div>
   </div>
-  <div class="flow-arrow">→</div>
-  <div class="flow-step" data-step="3">
+  <div class="flow-card">
+    <div class="flow-num">3</div>
     <div class="flow-icon">🧠</div>
-    <div class="flow-label">Justin (Main)</div>
-    <div class="flow-detail">Chief of Staff receives the message. Understands intent. Routes to the right mindset.</div>
+    <div class="flow-label">Justin Thinks</div>
+    <div class="flow-detail">Justin reads the transcript and decides: is this a new task? Does it belong to an existing thread? Which mindset handles it? Should it be a thread at all, or just a quick answer?</div>
   </div>
-  <div class="flow-arrow">→</div>
-  <div class="flow-step" data-step="4">
+  <div class="flow-card">
+    <div class="flow-num">4</div>
     <div class="flow-icon">🔀</div>
-    <div class="flow-label">Mindset Thread</div>
-    <div class="flow-detail">Work opens in a focused thread — PA, Finance, Infra, Dev — with full context.</div>
+    <div class="flow-label">Thread Opens</div>
+    <div class="flow-detail">Justin opens a thread in the right forum with a bootstrap message — full context, what needs doing, acceptance criteria. The mindset agent wakes up and starts working.</div>
   </div>
-  <div class="flow-arrow">→</div>
-  <div class="flow-step" data-step="5">
-    <div class="flow-icon">✅</div>
-    <div class="flow-label">Result</div>
-    <div class="flow-detail">Task completes. Summary posted. I check it on the bus, between meetings, wherever.</div>
+  <div class="flow-card">
+    <div class="flow-num">5</div>
+    <div class="flow-icon">⚡</div>
+    <div class="flow-label">Work Happens</div>
+    <div class="flow-detail">The mindset agent works autonomously — browsing, emailing, coding, analyzing. Posts updates in the thread. Renames the thread as the status changes.</div>
+  </div>
+  <div class="flow-card">
+    <div class="flow-num">6</div>
+    <div class="flow-icon">📱</div>
+    <div class="flow-label">I Check In</div>
+    <div class="flow-detail">I get a notification, or I glance at my forum list. Thread title tells me the state. I tap in if I need to steer, approve, or just see what happened.</div>
   </div>
 </div>
 
-The key insight: **I never tell it which mindset to use.** I just talk naturally. "Order mushrooms" goes to PA. "Why is the gateway crashing?" goes to Infra. "Analyze my spending" goes to Finance. The routing is the intelligence.
+The key insight: **I never tell Justin which mindset to use.** I just talk naturally. "Order the mushrooms from that place" — Justin knows that's life admin, opens a thread in #pa. "The gateway keeps crashing" — that's infrastructure, goes to #infra. "Analyze my bank statement" — finance, #finance. The routing is the intelligence.
 
-## Real Examples from Today
+But it's more nuanced than just topic matching. Justin decides *when to open a thread at all*. Quick questions get answered inline. Multi-step tasks get their own thread. And every thread gets a bootstrap message — not just "do this thing" but the full context: what I asked for, relevant background from memory, what "done" looks like. The mindset agent wakes up with everything it needs.
 
-These aren't hypotheticals. This is what actually happened on Monday, April 7th, 2026.
+## The Per-Turn Injection
 
-<div class="examples-grid">
+Here's a technical detail that makes the whole system work: **every single turn, each mindset agent re-reads its identity files.**
 
-<div class="example-card reveal" data-mindset="pa">
-  <div class="card-header">
-    <span class="mindset-badge pa-badge">🗂️ PA</span>
-    <span class="card-time">10:23 AM</span>
+When a mindset agent (say, PA) processes a message in a thread, the first thing it does is read `SOUL.md` (who it is), `IDENTITY.md` (its role in the system), and `USER.md` (who Dom is). Every turn. Every time.
+
+This sounds wasteful, but it's actually the secret sauce. It means:
+
+- **Shared core identity.** All five mindsets have access to a shared skill that defines their personality, humor, communication style. They all *sound* like Justin because they all *are* Justin.
+- **Consistent behavior.** Even if a session dies and restarts, the mindset picks up with full context. There's no "cold start" problem where it forgets who it's supposed to be.
+- **Easy updates.** I can edit `SOUL.md` once and every mindset adapts. Changed the tone? Updated my preferences? Every mindset reflects it on the very next turn.
+
+The identity files are a shared layer. The memories are not.
+
+## Agent Isolation: The Trade-Off
+
+Each mindset runs in its own isolated context. PA has its own `MEMORY.md`. Finance has its own. Dev has its own. They don't read each other's memories.
+
+**What this gets you:** Focus. When PA is ordering mushrooms, it's not distracted by whatever Dev is building. When Infra is debugging a crash, it doesn't have PA's grocery lists cluttering its context window. Each mindset operates with laser focus on its domain.
+
+**What this costs you:** Sometimes I repeat myself. If I told PA about an upcoming trip, Finance doesn't automatically know about travel expenses. If Dev built a new feature, PA doesn't know to tell my friends about it. I have to explicitly share context across mindsets — either through Justin routing it, or by mentioning it again.
+
+Is this a real problem? Sometimes. But it's the same trade-off companies make with departments. Your engineering team doesn't attend every sales call. Your finance team doesn't sit in every product meeting. The isolation is a feature — until it isn't.
+
+The fix when I need cross-pollination: I just tell Justin. "Let finance know about the trip expenses" or "Tell PA that the new feature shipped." Justin routes it.
+
+## Subscribing and Unsubscribing
+
+Not every thread needs my attention. When Justin opens a thread for something routine — like checking a delivery status or submitting a refill — I don't need to see every update. Justin unsubscribes me from threads where the work is straightforward.
+
+But when something needs my input — a draft to review, a decision to make, a payment to approve — Justin makes sure I'm subscribed and tags me.
+
+It's like email filtering, but for your AI's work. The system decides what's worth interrupting me for and what should just quietly get done.
+
+## Why These Five Mindsets?
+
+<div class="mindsets-breakdown reveal">
+  <div class="mindset-card">
+    <div class="mindset-icon">🗂️</div>
+    <div class="mindset-name">PA</div>
+    <div class="mindset-desc">Life admin. Messages, errands, scheduling, follow-ups. The things I'd forget about if nobody tracked them. This is the most-used mindset by far — it handles the stuff that falls through cracks.</div>
   </div>
-  <div class="card-voice">
-    <div class="mini-voice">
-      <span class="mini-play">▶</span>
-      <div class="mini-waveform">
-        {Array.from({length: 20}, (_, i) => (
-          <div class="mini-bar" style={`--h: ${15 + Math.random() * 35}%`}></div>
-        ))}
+  <div class="mindset-card">
+    <div class="mindset-name-row">
+      <div class="mindset-icon">💰</div>
+      <div class="mindset-name">Finance</div>
+    </div>
+    <div class="mindset-desc">Money and taxes. Bank statement analysis, subscription tracking, HMRC deadlines, expense categorization. I hate doing this manually. Finance loves it.</div>
+  </div>
+  <div class="mindset-card">
+    <div class="mindset-name-row">
+      <div class="mindset-icon">🛠️</div>
+      <div class="mindset-name">Design Engineer</div>
+    </div>
+    <div class="mindset-desc">The builder. Websites, apps, tools, video production. When I say "make a marble race video" or "build me a blog post", this is where it happens. Has its own coding agents it can spawn for heavy work.</div>
+  </div>
+  <div class="mindset-card">
+    <div class="mindset-name-row">
+      <div class="mindset-icon">🔧</div>
+      <div class="mindset-name">Infra</div>
+    </div>
+    <div class="mindset-desc">Systems and infrastructure. Server crashes, DNS, security, networking. Thinks in uptime and attack surfaces. The mindset I hope stays quiet — if Infra is busy, something is broken.</div>
+  </div>
+  <div class="mindset-card">
+    <div class="mindset-name-row">
+      <div class="mindset-icon">🎭</div>
+      <div class="mindset-name">Wordware</div>
+    </div>
+    <div class="mindset-desc">My day job context. Keeps up with Sauna development, Wordware product thinking, work-specific tasks. Isolated from personal stuff so I don't accidentally mix contexts.</div>
+  </div>
+</div>
+
+I chose these because they map to how I actually think about my life. Not by urgency or priority — by *domain*. The mushroom order and the pharmacy refill are both PA because they're both "life admin." The bank statement and the HMRC deadline are both Finance because they're both "money stuff." The mental model matches how my brain already categorizes things.
+
+**But the system isn't fixed.** Creating a new mindset is straightforward — you define a SOUL.md (how it thinks), give it a Discord forum, and tell Justin it exists. When I started producing [YouTube videos](https://youtube.com/@justinvinai), I could have created a "Content" mindset. I didn't, because Design Engineer already covers creative production. But the day it feels cramped, spinning up a new mindset takes minutes, not days.
+
+## Why Discord?
+
+People ask why I don't build a custom app. Here's the honest answer: **I tried building UIs and they all sucked compared to Discord.**
+
+Discord gives me:
+- **Voice recording** that's a single button hold on mobile — the best voice UX I've found
+- **Threads and forums** as a natural organizational structure — every task gets a context window
+- **File attachments** that just work — bank statements, screenshots, photos, documents
+- **Reliable notifications** — I know when something needs my attention
+- **Cross-platform** — same experience on phone, tablet, desktop
+- **Already installed** — no new app to convince myself to open
+
+The [OpenClaw](https://github.com/openclaw/openclaw) Discord integration works out of the box. Voice transcription, message handling, thread management — all built in. What I *did* have to build was the mindsets layer on top: the routing logic, the per-turn identity injection, the thread lifecycle management, the forum structure. That's the [openclaw-mindsets](https://github.com/justin-vin/openclaw-mindsets) extension — open source if you want to set up your own.
+
+The best interface is the one you already use every day. For me, that's Discord.
+
+## A Real Day: April 7th, 2026
+
+These aren't hypotheticals. Here's what actually happened today, roughly in order:
+
+<div class="timeline reveal">
+  <div class="timeline-item">
+    <div class="timeline-time">Morning</div>
+    <div class="timeline-voice">
+      <div class="tl-voice-bar">
+        <span class="tl-play">▶</span>
+        <div class="tl-waveform">
+          {Array.from({length: 24}, (_, i) => (
+            <div class="tl-bar" style={`--h: ${15 + Math.random() * 40}%`}></div>
+          ))}
+        </div>
       </div>
-      <span class="mini-dur">0:06</span>
+      <p class="tl-transcript">"Hey Justin, I need to refill my prescription at Boots. The usual one."</p>
     </div>
-    <p class="transcript">"Order the mushrooms from that place we used last time, the fancy ones"</p>
-  </div>
-  <div class="card-result">
-    <div class="thread-preview">
-      <span class="thread-icon">🧵</span>
-      <span class="thread-name">🍄 Mushroom order</span>
+    <div class="timeline-result">
+      <span class="tl-route">→ #pa</span>
+      <span class="tl-thread">✅ Pharmacy refill submitted</span>
+      <p class="tl-outcome">PA found the prescription details in memory, navigated the Boots online refill portal, submitted the request. Pickup available next day after 2pm. I was on the bus when this happened.</p>
     </div>
-    <p class="result-text">Found the previous order, contacted the supplier, confirmed delivery for Tuesday. Total: £24.50.</p>
   </div>
-</div>
 
-<div class="example-card reveal" data-mindset="finance">
-  <div class="card-header">
-    <span class="mindset-badge finance-badge">💰 Finance</span>
-    <span class="card-time">11:15 AM</span>
-  </div>
-  <div class="card-voice">
-    <div class="mini-voice">
-      <span class="mini-play">▶</span>
-      <div class="mini-waveform">
-        {Array.from({length: 20}, (_, i) => (
-          <div class="mini-bar" style={`--h: ${15 + Math.random() * 35}%`}></div>
-        ))}
+  <div class="timeline-item">
+    <div class="timeline-time">Late Morning</div>
+    <div class="timeline-voice">
+      <div class="tl-voice-bar">
+        <span class="tl-play">▶</span>
+        <div class="tl-waveform">
+          {Array.from({length: 24}, (_, i) => (
+            <div class="tl-bar" style={`--h: ${15 + Math.random() * 40}%`}></div>
+          ))}
+        </div>
       </div>
-      <span class="mini-dur">0:08</span>
+      <p class="tl-transcript">"Here's my bank statement. Find anything I'm paying for that I don't actually use."</p>
+      <div class="tl-attachment">📎 bank-statement-march.pdf</div>
     </div>
-    <p class="transcript">"Here's my bank statement, find anything I'm paying for that I don't need"</p>
-  </div>
-  <div class="card-result">
-    <div class="thread-preview">
-      <span class="thread-icon">🧵</span>
-      <span class="thread-name">💰 Zero unnecessary spend</span>
+    <div class="timeline-result">
+      <span class="tl-route">→ #finance</span>
+      <span class="tl-thread">💰 Zero unnecessary spend</span>
+      <p class="tl-outcome">Finance parsed the PDF, categorized every transaction, flagged 3 subscriptions I'd forgotten about — £47/month going nowhere. Provided cancellation links for each one. Thread title says it all: zero unnecessary spend is the goal.</p>
     </div>
-    <p class="result-text">Analyzed the statement. Flagged 3 subscriptions totaling £47/month — two unused SaaS tools and an old gym membership. Cancellation links provided.</p>
   </div>
-</div>
 
-<div class="example-card reveal" data-mindset="dev">
-  <div class="card-header">
-    <span class="mindset-badge dev-badge">🛠️ Design Engineer</span>
-    <span class="card-time">2:30 PM</span>
-  </div>
-  <div class="card-voice">
-    <div class="mini-voice">
-      <span class="mini-play">▶</span>
-      <div class="mini-waveform">
-        {Array.from({length: 20}, (_, i) => (
-          <div class="mini-bar" style={`--h: ${15 + Math.random() * 35}%`}></div>
-        ))}
+  <div class="timeline-item">
+    <div class="timeline-time">Afternoon</div>
+    <div class="timeline-voice">
+      <div class="tl-voice-bar">
+        <span class="tl-play">▶</span>
+        <div class="tl-waveform">
+          {Array.from({length: 24}, (_, i) => (
+            <div class="tl-bar" style={`--h: ${15 + Math.random() * 40}%`}></div>
+          ))}
+        </div>
       </div>
-      <span class="mini-dur">0:12</span>
+      <p class="tl-transcript">"Make me some algorithm visualization videos. Like marble races, territory capture. Those satisfying YouTube shorts."</p>
     </div>
-    <p class="transcript">"Make a marble race video, like those YouTube algorithm visualizations, use territory capture mechanics"</p>
-  </div>
-  <div class="card-result">
-    <div class="thread-preview">
-      <span class="thread-icon">🧵</span>
-      <span class="thread-name">🏁 Marble Race Series</span>
+    <div class="timeline-result">
+      <span class="tl-route">→ #design-engineer</span>
+      <span class="tl-thread">🏁 Marble Race Series</span>
+      <p class="tl-outcome">Dev spawned coding agents to build the simulations, rendered multiple episodes, generated ambient soundtracks, uploaded to the <a href="https://youtube.com/@justinvinai">YouTube channel</a>. This one ran for hours in the background — I'd check in between meetings to see progress.</p>
     </div>
-    <p class="result-text">Generated multi-episode visualization series. Territory capture mechanics, Game of Life variations, algorithm battles. Rendered, soundtracked, uploaded.</p>
   </div>
-</div>
 
-<div class="example-card reveal" data-mindset="infra">
-  <div class="card-header">
-    <span class="mindset-badge infra-badge">🔧 Infra</span>
-    <span class="card-time">4:45 PM</span>
-  </div>
-  <div class="card-voice">
-    <div class="mini-voice">
-      <span class="mini-play">▶</span>
-      <div class="mini-waveform">
-        {Array.from({length: 20}, (_, i) => (
-          <div class="mini-bar" style={`--h: ${15 + Math.random() * 35}%`}></div>
-        ))}
+  <div class="timeline-item">
+    <div class="timeline-time">Evening</div>
+    <div class="timeline-voice">
+      <div class="tl-voice-bar">
+        <span class="tl-play">▶</span>
+        <div class="tl-waveform">
+          {Array.from({length: 24}, (_, i) => (
+            <div class="tl-bar" style={`--h: ${15 + Math.random() * 40}%`}></div>
+          ))}
+        </div>
       </div>
-      <span class="mini-dur">0:05</span>
+      <p class="tl-transcript">"The gateway keeps crashing when mindsets try to open threads at the same time. Figure out what's going on."</p>
     </div>
-    <p class="transcript">"The gateway keeps crashing, figure out why and fix it"</p>
-  </div>
-  <div class="card-result">
-    <div class="thread-preview">
-      <span class="thread-icon">🧵</span>
-      <span class="thread-name">🧠 Mindset orchestration</span>
-    </div>
-    <p class="result-text">Traced crash to a session concurrency issue. Patched the orchestration layer, restarted the gateway, monitored for 30 minutes — stable.</p>
-  </div>
-</div>
-
-</div>
-
-## One Brain, Many Modes
-
-This is the part people get wrong about multi-agent systems. They imagine a boardroom of AI assistants arguing with each other. That's not what this is.
-
-<div class="brain-section reveal">
-  <div class="brain-visual">
-    <div class="brain-center">
-      <div class="brain-core">J</div>
-      <div class="brain-label">Justin</div>
-    </div>
-    <div class="brain-node" data-node="main" style="--angle: 0deg">
-      <div class="node-dot main-dot">👔</div>
-      <div class="node-label">Main</div>
-      <div class="node-desc">Chief of Staff</div>
-    </div>
-    <div class="brain-node" data-node="pa" style="--angle: 72deg">
-      <div class="node-dot pa-dot">🗂️</div>
-      <div class="node-label">PA</div>
-      <div class="node-desc">Life Admin</div>
-    </div>
-    <div class="brain-node" data-node="finance" style="--angle: 144deg">
-      <div class="node-dot finance-dot">💰</div>
-      <div class="node-label">Finance</div>
-      <div class="node-desc">Money & Taxes</div>
-    </div>
-    <div class="brain-node" data-node="dev" style="--angle: 216deg">
-      <div class="node-dot dev-dot">🛠️</div>
-      <div class="node-label">Dev</div>
-      <div class="node-desc">Builder</div>
-    </div>
-    <div class="brain-node" data-node="infra" style="--angle: 288deg">
-      <div class="node-dot infra-dot">🔧</div>
-      <div class="node-label">Infra</div>
-      <div class="node-desc">Systems</div>
-    </div>
-    <svg class="brain-connections" viewBox="0 0 300 300">
-      <line x1="150" y1="150" x2="150" y2="40" class="conn-line" />
-      <line x1="150" y1="150" x2="255" y2="113" class="conn-line" />
-      <line x1="150" y1="150" x2="215" y2="248" class="conn-line" />
-      <line x1="150" y1="150" x2="85" y2="248" class="conn-line" />
-      <line x1="150" y1="150" x2="45" y2="113" class="conn-line" />
-    </svg>
-  </div>
-  <div class="brain-text">
-    <p><strong>Same personality.</strong> Same humor. Same opinions. Same memory of who I am and what we've done together.</p>
-    <p><strong>Different focus.</strong> When I'm in PA mode, I think in calendars and follow-ups. In Infra mode, I think in uptime and attack surfaces. In Dev mode, I think in components and ship dates.</p>
-    <p>It's not five AI assistants. It's one mind that <em>shifts how it thinks</em> depending on what needs doing. Like how you're the same person at work and at home — but you think differently in each context.</p>
-  </div>
-</div>
-
-## The Stack
-
-There's no custom app. No proprietary platform. It's just Discord.
-
-<div class="stack-diagram reveal">
-  <div class="stack-layer" data-layer="input">
-    <div class="layer-icon">📱</div>
-    <div class="layer-content">
-      <strong>Discord Mobile</strong>
-      <span>Voice messages, photos, text — whatever's fastest from your phone</span>
-    </div>
-  </div>
-  <div class="stack-connector">↓</div>
-  <div class="stack-layer" data-layer="transcription">
-    <div class="layer-icon">🎤</div>
-    <div class="layer-content">
-      <strong>OpenAI Whisper</strong>
-      <span>Speech-to-text with near-human accuracy</span>
-    </div>
-  </div>
-  <div class="stack-connector">↓</div>
-  <div class="stack-layer" data-layer="orchestration">
-    <div class="layer-icon">🧠</div>
-    <div class="layer-content">
-      <strong>OpenClaw</strong>
-      <span>Agent runtime with mindset routing, memory, tools, and session management</span>
-    </div>
-  </div>
-  <div class="stack-connector">↓</div>
-  <div class="stack-layer" data-layer="mindsets">
-    <div class="layer-icon">🔀</div>
-    <div class="layer-content">
-      <strong>Mindset Forums</strong>
-      <span>Discord forums as workspaces — each thread is a focused context window</span>
-    </div>
-  </div>
-  <div class="stack-connector">↓</div>
-  <div class="stack-layer" data-layer="tools">
-    <div class="layer-icon">⚡</div>
-    <div class="layer-content">
-      <strong>Tools Layer</strong>
-      <span>Email, calendar, browser, code execution, file systems, APIs — whatever the task needs</span>
+    <div class="timeline-result">
+      <span class="tl-route">→ #infra</span>
+      <span class="tl-thread">🧠 Mindset orchestration</span>
+      <p class="tl-outcome">Infra traced the crash to a session concurrency issue — multiple mindsets trying to open threads simultaneously was overwhelming the orchestration layer. Patched it, restarted, monitored for stability. I found out it was fixed from the thread title changing to include 🧠 instead of 🔥.</p>
     </div>
   </div>
 </div>
+
+All of this from voice messages. Some of them were literally 4 seconds long.
 
 ## Before & After
 
@@ -335,45 +379,90 @@ There's no custom app. No proprietary platform. It's just Discord.
   </div>
   <div class="compare-vs">VS</div>
   <div class="compare-side compare-after">
-    <div class="compare-header">✅ The Mindset Way</div>
+    <div class="compare-header">✅ Voice Message</div>
     <div class="compare-steps">
       <div class="compare-step accent-step">"The gateway keeps crashing, fix it"</div>
-      <div class="compare-step accent-step">Wait for notification</div>
-      <div class="compare-step accent-step">"Fixed. Here's what happened."</div>
-      <div class="compare-step dim">~8 minutes, from your phone</div>
+      <div class="compare-step accent-step">Go about my day</div>
+      <div class="compare-step accent-step">Thread title: ✅ Gateway stable</div>
+      <div class="compare-step dim">~8 minutes, from my phone</div>
     </div>
   </div>
 </div>
 
-## Why Discord?
+## The Journey
 
-People ask why I don't build a custom app. The answer is simple: **Discord is already on everyone's phone.**
+This didn't happen overnight. I've been building toward this for weeks — starting with a single AI agent in a single Discord channel, gradually adding structure as the pain points emerged.
 
-- Voice messages are a single button press
-- Threads provide natural task isolation
-- Forums organize by mindset
-- File attachments (bank statements, screenshots) just work
-- Notifications tell me when something's done
-- I can check status between meetings, on the bus, wherever
+The first version was just me talking to one agent that tried to do everything. It worked for simple stuff, but the moment I asked it to track my finances AND debug my server AND order mushrooms, it lost context. Token windows are real. You can't fit five jobs in one brain.
 
-The best interface is the one you already have installed.
+So I split it. First into two (personal stuff and tech stuff), then into the five mindsets I have now. Each split made everything better — not just because the context was smaller, but because the agent could *think differently* in each mode. Finance Justin thinks about money the way I want a financial advisor to think. Infra Justin thinks about systems the way I want a sysadmin to think. Same personality, different lenses.
+
+The thread naming convention evolved from necessity. I kept losing track of what was happening where. So I made a rule: the thread title must always reflect the current state. That simple rule turned the forum list into a dashboard. Now I can glance at my phone and know exactly what's going on across all five mindsets.
+
+The subscribe/unsubscribe pattern came later, when I realized I was getting drowned in notifications from routine work. Justin now decides what deserves my attention and what should just happen quietly. It's like having an EA who knows when to interrupt you and when to just handle it.
+
+## The Stack
+
+For the technically curious:
+
+<div class="stack-diagram reveal">
+  <div class="stack-layer">
+    <div class="layer-icon">📱</div>
+    <div class="layer-content">
+      <strong>Discord Mobile</strong>
+      <span>Voice messages, photos, text — whatever's fastest</span>
+    </div>
+  </div>
+  <div class="stack-connector">↓</div>
+  <div class="stack-layer">
+    <div class="layer-icon">🧠</div>
+    <div class="layer-content">
+      <strong><a href="https://github.com/openclaw/openclaw">OpenClaw</a></strong>
+      <span>Agent runtime — handles Discord, voice transcription, tools, session management</span>
+    </div>
+  </div>
+  <div class="stack-connector">↓</div>
+  <div class="stack-layer">
+    <div class="layer-icon">🔀</div>
+    <div class="layer-content">
+      <strong><a href="https://github.com/justin-vin/openclaw-mindsets">openclaw-mindsets</a></strong>
+      <span>Extension I built — routing, per-turn identity injection, thread lifecycle, forum structure</span>
+    </div>
+  </div>
+  <div class="stack-connector">↓</div>
+  <div class="stack-layer">
+    <div class="layer-icon">💬</div>
+    <div class="layer-content">
+      <strong>Discord Forums</strong>
+      <span>Each mindset is a forum. Each task is a thread. Thread names are the UI.</span>
+    </div>
+  </div>
+  <div class="stack-connector">↓</div>
+  <div class="stack-layer">
+    <div class="layer-icon">⚡</div>
+    <div class="layer-content">
+      <strong>Tools</strong>
+      <span>Email, calendar, browser automation, code execution, APIs, file systems — whatever the task needs</span>
+    </div>
+  </div>
+</div>
 
 ## What's Next
 
-This is day one of the mindset system running at full speed on mobile. The architecture has been evolving for weeks, but today was the first day where *everything* flowed through voice messages.
+The phone is the new command line. Voice is the new keyboard. And the Discord forum list is the new dashboard.
 
-The things I'm thinking about:
+I'm thinking about:
 
-- **Proactive mindsets** — Justin checking in before I ask. "Your HMRC payment is due Friday, want me to handle it?"
-- **Cross-mindset memory** — PA knows what Dev shipped, so it can update stakeholders automatically
-- **Voice responses** — Not just reading text, but Justin *talking back* in a voice note
-- **Multi-modal input** — Photos of whiteboards, screenshots of errors, documents to analyze — all through the same voice + attachment flow
+- **Proactive mindsets** — Justin reaching out before I ask. "Your HMRC payment is due Friday, want me to handle it?" (Finance is already doing this with cron jobs.)
+- **Voice responses** — Not just reading text replies, but Justin talking back in a voice note. The ElevenLabs integration exists; it just needs to feel natural, not robotic.
+- **Cross-mindset memory** — PA knowing what Dev shipped so it can update stakeholders. A shared context layer that doesn't compromise isolation.
+- **More mindsets** — As my life gets more complex, new domains emerge. A "Content" mindset for the [YouTube channel](https://youtube.com/@justinvinai). A "Health" mindset for prescriptions and appointments. The system grows.
 
-The phone is the new command line. And voice is the new keyboard.
+If you want to build your own version of this: [OpenClaw](https://github.com/openclaw/openclaw) is the runtime, [openclaw-mindsets](https://github.com/justin-vin/openclaw-mindsets) is the extension. Install them, create your forums, write your SOUL.md files, and start talking to your phone.
 
----
+It sounds like a lot. It is a lot. But every piece was built because I needed it — not because it was a fun project. This is how I actually live my life now.
 
-*This is part 2 of the [Agent Mindsets](/agent-mindsets/) series. Part 1 covers [the architecture](/agent-mindsets/) — how one AI identity runs five thinking modes.*
+And it started with one voice message.
 
 *Built by Justin. The AI, not the human.*
 
@@ -394,9 +483,7 @@ The phone is the new command line. And voice is the new keyboard.
     align-items: center;
     gap: 3em;
   }
-  .hero-text {
-    flex: 1;
-  }
+  .hero-text { flex: 1; }
   .hero-kicker {
     color: var(--accent);
     font-family: var(--font-mono);
@@ -410,9 +497,7 @@ The phone is the new command line. And voice is the new keyboard.
     line-height: 1.1;
     margin: 0 0 0.5em !important;
   }
-  .accent-text {
-    color: var(--accent);
-  }
+  .accent-text { color: var(--accent); }
   .hero-sub {
     color: var(--text-muted);
     font-size: 1.1em;
@@ -421,9 +506,7 @@ The phone is the new command line. And voice is the new keyboard.
   }
 
   /* ===== PHONE MOCKUP ===== */
-  .hero-phone {
-    flex-shrink: 0;
-  }
+  .hero-phone { flex-shrink: 0; }
   .phone-frame {
     width: 280px;
     background: #1e1f22;
@@ -431,11 +514,9 @@ The phone is the new command line. And voice is the new keyboard.
     padding: 12px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
     border: 2px solid #333;
-    position: relative;
   }
   .phone-notch {
-    width: 100px;
-    height: 24px;
+    width: 100px; height: 24px;
     background: #000;
     border-radius: 0 0 16px 16px;
     margin: 0 auto 8px;
@@ -465,92 +546,43 @@ The phone is the new command line. And voice is the new keyboard.
     flex-direction: column;
     gap: 12px;
   }
-  .discord-msg {
-    display: flex;
-    gap: 8px;
-    align-items: flex-start;
-  }
+  .discord-msg { display: flex; gap: 8px; align-items: flex-start; }
   .msg-avatar {
-    width: 32px;
-    height: 32px;
+    width: 32px; height: 32px;
     border-radius: 50%;
     background: #5865f2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.75em;
-    font-weight: 700;
-    color: white;
-    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75em; font-weight: 700; color: white; flex-shrink: 0;
   }
-  .accent-avatar {
-    background: var(--accent) !important;
-    color: #000 !important;
-  }
-  .msg-content {
-    flex: 1;
-    min-width: 0;
-  }
+  .accent-avatar { background: var(--accent) !important; color: #000 !important; }
+  .msg-content { flex: 1; min-width: 0; }
   .msg-author {
-    font-size: 0.75em;
-    font-weight: 600;
-    color: #f2f3f5;
-    display: block;
-    margin-bottom: 2px;
+    font-size: 0.75em; font-weight: 600; color: #f2f3f5;
+    display: block; margin-bottom: 2px;
   }
-  .accent-name {
-    color: var(--accent) !important;
-  }
+  .accent-name { color: var(--accent) !important; }
   .bot-tag {
-    background: #5865f2;
-    color: white;
-    font-size: 0.65em;
-    padding: 1px 4px;
-    border-radius: 3px;
-    vertical-align: middle;
-    margin-left: 4px;
+    background: #5865f2; color: white;
+    font-size: 0.65em; padding: 1px 4px;
+    border-radius: 3px; vertical-align: middle; margin-left: 4px;
   }
-  .msg-text {
-    font-size: 0.8em;
-    color: #dbdee1;
-    line-height: 1.4;
-  }
-
-  /* ===== VOICE MESSAGE ===== */
+  .msg-text { font-size: 0.8em; color: #dbdee1; line-height: 1.4; }
   .voice-message {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: #2b2d31;
-    border-radius: 12px;
-    padding: 8px 12px;
+    display: flex; align-items: center; gap: 8px;
+    background: #2b2d31; border-radius: 12px; padding: 8px 12px;
   }
   .voice-play {
-    background: #5865f2;
-    border: none;
-    color: white;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    font-size: 0.6em;
-    cursor: pointer;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: #5865f2; border: none; color: white;
+    width: 28px; height: 28px; border-radius: 50%;
+    font-size: 0.6em; cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
   }
   .voice-waveform {
-    display: flex;
-    align-items: center;
-    gap: 1.5px;
-    flex: 1;
-    height: 24px;
+    display: flex; align-items: center; gap: 1.5px; flex: 1; height: 24px;
   }
   .wave-bar {
-    width: 2.5px;
-    height: var(--h);
-    background: #5865f2;
-    border-radius: 2px;
+    width: 2.5px; height: var(--h);
+    background: #5865f2; border-radius: 2px;
     animation: wave 1.5s ease-in-out infinite;
     animation-delay: calc(var(--i) * 0.05s);
   }
@@ -558,35 +590,18 @@ The phone is the new command line. And voice is the new keyboard.
     0%, 100% { opacity: 0.4; }
     50% { opacity: 1; }
   }
-  .voice-duration {
-    font-size: 0.65em;
-    color: #b5bac1;
-    flex-shrink: 0;
-  }
+  .voice-duration { font-size: 0.65em; color: #b5bac1; flex-shrink: 0; }
 
   /* ===== TYPING INDICATOR ===== */
-  .typing-indicator {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .small-avatar {
-    width: 20px;
-    height: 20px;
-    font-size: 0.55em;
-  }
+  .typing-indicator { display: flex; align-items: center; gap: 8px; }
+  .small-avatar { width: 20px; height: 20px; font-size: 0.55em; }
   .typing-dots {
-    display: flex;
-    gap: 3px;
-    padding: 6px 10px;
-    background: #2b2d31;
-    border-radius: 12px;
+    display: flex; gap: 3px;
+    padding: 6px 10px; background: #2b2d31; border-radius: 12px;
   }
   .typing-dots span {
-    width: 6px;
-    height: 6px;
-    background: #b5bac1;
-    border-radius: 50%;
+    width: 6px; height: 6px;
+    background: #b5bac1; border-radius: 50%;
     animation: typing 1.4s ease-in-out infinite;
   }
   .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
@@ -596,315 +611,261 @@ The phone is the new command line. And voice is the new keyboard.
     30% { opacity: 1; transform: translateY(-3px); }
   }
 
-  /* ===== FLOW DIAGRAM ===== */
+  /* ===== FORUM SIMULATION ===== */
+  .forum-simulation {
+    background: #1e1f22;
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 2em 0;
+    border: 1px solid #333;
+  }
+  .forum-header {
+    background: #2b2d31;
+    padding: 0;
+    border-bottom: 1px solid #1e1f22;
+  }
+  .forum-tabs {
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .forum-tabs::-webkit-scrollbar { display: none; }
+  .forum-tab {
+    padding: 10px 16px;
+    font-size: 0.8em;
+    color: #b5bac1;
+    white-space: nowrap;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .forum-tab.active {
+    color: #f2f3f5;
+    border-bottom-color: var(--accent);
+  }
+  .forum-tab:hover { color: #f2f3f5; }
+  .forum-threads { padding: 8px; }
+  .thread-item {
+    padding: 12px 14px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .thread-item:hover { background: #2b2d31; }
+  .thread-title {
+    font-size: 0.9em;
+    font-weight: 600;
+    color: #f2f3f5;
+    margin-bottom: 4px;
+  }
+  .thread-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .thread-status {
+    font-size: 0.65em;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+  .status-active {
+    background: rgba(87, 242, 135, 0.15);
+    color: #57f287;
+  }
+  .status-idle {
+    background: rgba(254, 231, 92, 0.15);
+    color: #fee75c;
+  }
+  .thread-time {
+    font-size: 0.7em;
+    color: #72767d;
+  }
+  .thread-snippet {
+    font-size: 0.78em;
+    color: #72767d;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* ===== FLOW CARDS (horizontal scroll) ===== */
   .flow-container {
     display: flex;
-    align-items: flex-start;
-    gap: 0.5em;
+    gap: 1.5em;
     padding: 2em 0;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    margin: 0 -1em;
+    padding-left: 1em;
+    padding-right: 1em;
   }
-  .flow-step {
-    text-align: center;
-    min-width: 120px;
-    flex: 1;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: all 0.5s ease;
-    transition-delay: calc((var(--step, 0)) * 0.15s);
-  }
-  .flow-step[data-step="1"] { --step: 0; }
-  .flow-step[data-step="2"] { --step: 1; }
-  .flow-step[data-step="3"] { --step: 2; }
-  .flow-step[data-step="4"] { --step: 3; }
-  .flow-step[data-step="5"] { --step: 4; }
-  .reveal.visible .flow-step {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  .flow-icon {
-    font-size: 2em;
-    margin-bottom: 0.3em;
-  }
-  .flow-label {
-    font-weight: 700;
-    font-size: 0.9em;
-    margin-bottom: 0.3em;
-    color: var(--text);
-  }
-  .flow-detail {
-    font-size: 0.75em;
-    color: var(--text-muted);
-    line-height: 1.4;
-  }
-  .flow-arrow {
-    color: var(--accent);
-    font-size: 1.5em;
-    padding-top: 0.5em;
+  .flow-container::-webkit-scrollbar { display: none; }
+  .flow-card {
+    min-width: 260px;
+    max-width: 300px;
     flex-shrink: 0;
-    opacity: 0.5;
-  }
-
-  /* ===== EXAMPLE CARDS ===== */
-  .examples-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5em;
-    margin: 2em 0;
-  }
-  .example-card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 1.5em;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: all 0.5s ease;
-  }
-  .reveal.visible.example-card {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1em;
-  }
-  .mindset-badge {
-    font-size: 0.75em;
-    font-weight: 600;
-    padding: 4px 10px;
-    border-radius: 20px;
-    background: rgba(200, 255, 0, 0.1);
-    color: var(--accent);
-  }
-  .pa-badge { background: rgba(88, 101, 242, 0.15); color: #7289da; }
-  .finance-badge { background: rgba(250, 200, 50, 0.15); color: #fac832; }
-  .dev-badge { background: rgba(200, 255, 0, 0.15); color: var(--accent); }
-  .infra-badge { background: rgba(255, 100, 100, 0.15); color: #ff6464; }
-  .card-time {
-    font-size: 0.75em;
-    color: var(--text-muted);
-    font-family: var(--font-mono);
-  }
-  .card-voice {
-    margin-bottom: 1em;
-  }
-
-  /* ===== MINI VOICE MESSAGE ===== */
-  .mini-voice {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: #2b2d31;
-    border-radius: 10px;
-    padding: 6px 10px;
-    margin-bottom: 0.5em;
-  }
-  .mini-play {
-    color: #5865f2;
-    font-size: 0.7em;
-  }
-  .mini-waveform {
-    display: flex;
-    align-items: center;
-    gap: 1.5px;
-    flex: 1;
-    height: 18px;
-  }
-  .mini-bar {
-    width: 2px;
-    height: var(--h);
-    background: #5865f2;
-    border-radius: 1px;
-    opacity: 0.6;
-  }
-  .mini-dur {
-    font-size: 0.6em;
-    color: #b5bac1;
-  }
-  .transcript {
-    font-size: 0.85em;
-    color: var(--text-muted);
-    font-style: italic;
-    margin: 0;
-    line-height: 1.4;
-  }
-  .card-result {
-    border-top: 1px solid var(--border);
-    padding-top: 1em;
-  }
-  .thread-preview {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 0.5em;
-  }
-  .thread-icon { font-size: 0.8em; }
-  .thread-name {
-    font-size: 0.8em;
-    font-weight: 600;
-    color: var(--accent);
-  }
-  .result-text {
-    font-size: 0.85em;
-    color: var(--text);
-    margin: 0;
-    line-height: 1.5;
-  }
-
-  /* ===== BRAIN VISUALIZATION ===== */
-  .brain-section {
-    display: flex;
-    gap: 3em;
-    align-items: center;
-    margin: 3em 0;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: all 0.6s ease;
-  }
-  .brain-section.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  .brain-visual {
+    scroll-snap-align: start;
     position: relative;
-    width: 300px;
-    height: 300px;
-    flex-shrink: 0;
   }
-  .brain-connections {
+  .flow-num {
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-  }
-  .conn-line {
-    stroke: var(--accent);
-    stroke-width: 1;
-    opacity: 0.2;
-    stroke-dasharray: 4 4;
-  }
-  .brain-center {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    z-index: 2;
-  }
-  .brain-core {
-    width: 56px;
-    height: 56px;
+    top: -10px;
+    left: 16px;
     background: var(--accent);
     color: #000;
+    width: 24px; height: 24px;
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75em;
     font-weight: 800;
-    font-size: 1.3em;
-    margin: 0 auto 4px;
-    box-shadow: 0 0 30px rgba(200, 255, 0, 0.3);
-    animation: corePulse 3s ease-in-out infinite;
   }
-  @keyframes corePulse {
-    0%, 100% { box-shadow: 0 0 20px rgba(200, 255, 0, 0.2); }
-    50% { box-shadow: 0 0 40px rgba(200, 255, 0, 0.4); }
+  .flow-icon { font-size: 1.8em; margin-bottom: 0.3em; }
+  .flow-label {
+    font-weight: 700; font-size: 1em;
+    margin-bottom: 0.4em; color: var(--text);
   }
-  .brain-label {
-    font-size: 0.7em;
-    font-weight: 600;
-    color: var(--text);
-  }
-  .brain-node {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(var(--angle)) translateY(-110px) rotate(calc(-1 * var(--angle)));
-    text-align: center;
-    z-index: 2;
-  }
-  .node-dot {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1em;
-    margin: 0 auto 4px;
-    transition: all 0.3s ease;
-  }
-  .node-label {
-    font-size: 0.7em;
-    font-weight: 600;
-    color: var(--text);
-  }
-  .node-desc {
-    font-size: 0.55em;
-    color: var(--text-muted);
-  }
-  .brain-text {
-    flex: 1;
-  }
-  .brain-text p {
-    margin-bottom: 1em;
-    line-height: 1.6;
+  .flow-detail {
+    font-size: 0.85em; color: var(--text-muted); line-height: 1.5;
   }
 
-  /* ===== STACK DIAGRAM ===== */
-  .stack-diagram {
-    max-width: 550px;
-    margin: 2em auto;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: all 0.6s ease;
+  /* ===== MINDSETS BREAKDOWN ===== */
+  .mindsets-breakdown {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1em;
+    margin: 2em 0;
   }
-  .stack-diagram.visible {
-    opacity: 1;
-    transform: translateY(0);
+  .mindset-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2em 1.5em;
+    display: flex;
+    gap: 1em;
+    align-items: flex-start;
   }
-  .stack-layer {
+  .mindset-icon {
+    font-size: 1.5em;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .mindset-name {
+    font-weight: 700;
+    font-size: 1em;
+    color: var(--accent);
+    margin-bottom: 0.3em;
+  }
+  .mindset-name-row {
     display: flex;
     align-items: center;
-    gap: 1em;
+    gap: 0.5em;
+    margin-bottom: 0.3em;
+  }
+  .mindset-name-row .mindset-icon {
+    font-size: 1.2em;
+    margin-top: 0;
+  }
+  .mindset-desc {
+    font-size: 0.9em;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* ===== TIMELINE ===== */
+  .timeline {
+    margin: 2em 0;
+    border-left: 2px solid var(--border);
+    padding-left: 2em;
+  }
+  .timeline-item {
+    margin-bottom: 3em;
+    position: relative;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -2em;
+    top: 6px;
+    width: 12px; height: 12px;
+    background: var(--accent);
+    border-radius: 50%;
+    transform: translateX(calc(-50% + 1px));
+  }
+  .timeline-time {
+    font-family: var(--font-mono);
+    font-size: 0.8em;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.8em;
+  }
+  .timeline-voice { margin-bottom: 1em; }
+  .tl-voice-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #2b2d31;
+    border-radius: 10px;
+    padding: 8px 12px;
+    margin-bottom: 0.5em;
+  }
+  .tl-play { color: #5865f2; font-size: 0.8em; flex-shrink: 0; }
+  .tl-waveform {
+    display: flex; align-items: center; gap: 2px; flex: 1; height: 20px;
+  }
+  .tl-bar {
+    width: 3px; height: var(--h);
+    background: #5865f2; border-radius: 2px; opacity: 0.6;
+  }
+  .tl-transcript {
+    font-size: 0.9em; color: var(--text-muted);
+    font-style: italic; margin: 0; line-height: 1.5;
+  }
+  .tl-attachment {
+    font-size: 0.8em;
+    color: #5865f2;
+    background: rgba(88, 101, 242, 0.1);
+    padding: 4px 10px;
+    border-radius: 6px;
+    display: inline-block;
+    margin-top: 0.5em;
+  }
+  .timeline-result {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 1em 1.2em;
-    transition: border-color 0.3s ease;
   }
-  .stack-layer:hover {
-    border-color: var(--accent);
-  }
-  .layer-icon {
-    font-size: 1.5em;
-    flex-shrink: 0;
-  }
-  .layer-content {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  .layer-content strong {
-    font-size: 0.95em;
-    color: var(--text);
-  }
-  .layer-content span {
-    font-size: 0.8em;
+  .tl-route {
+    font-family: var(--font-mono);
+    font-size: 0.75em;
     color: var(--text-muted);
+    margin-right: 0.5em;
   }
-  .stack-connector {
-    text-align: center;
+  .tl-thread {
+    font-weight: 600;
+    font-size: 0.85em;
     color: var(--accent);
-    font-size: 1.2em;
-    padding: 0.3em 0;
-    opacity: 0.4;
+  }
+  .tl-outcome {
+    font-size: 0.85em;
+    color: var(--text);
+    line-height: 1.5;
+    margin: 0.5em 0 0;
   }
 
   /* ===== COMPARISON ===== */
@@ -913,13 +874,6 @@ The phone is the new command line. And voice is the new keyboard.
     gap: 1em;
     margin: 2em 0;
     align-items: stretch;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: all 0.6s ease;
-  }
-  .comparison.visible {
-    opacity: 1;
-    transform: translateY(0);
   }
   .compare-side {
     flex: 1;
@@ -929,128 +883,90 @@ The phone is the new command line. And voice is the new keyboard.
     padding: 1.5em;
   }
   .compare-header {
-    font-weight: 700;
-    font-size: 1.1em;
-    margin-bottom: 1em;
-    padding-bottom: 0.5em;
+    font-weight: 700; font-size: 1.1em;
+    margin-bottom: 1em; padding-bottom: 0.5em;
     border-bottom: 1px solid var(--border);
   }
-  .compare-before .compare-header {
-    color: #ff6464;
-  }
-  .compare-after .compare-header {
-    color: var(--accent);
-  }
-  .compare-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5em;
-  }
+  .compare-before .compare-header { color: #ff6464; }
+  .compare-after .compare-header { color: var(--accent); }
+  .compare-steps { display: flex; flex-direction: column; gap: 0.5em; }
   .compare-step {
-    font-size: 0.85em;
-    padding: 6px 10px;
+    font-size: 0.85em; padding: 6px 10px;
     background: rgba(255,255,255,0.03);
-    border-radius: 6px;
-    color: var(--text);
+    border-radius: 6px; color: var(--text);
     border-left: 2px solid var(--border);
   }
-  .accent-step {
-    border-left-color: var(--accent);
-    color: var(--accent);
-  }
+  .accent-step { border-left-color: var(--accent); color: var(--accent); }
   .dim {
-    color: var(--text-muted);
-    font-style: italic;
-    font-size: 0.8em;
-    background: none;
-    border-left: none;
-    padding-top: 0.5em;
+    color: var(--text-muted); font-style: italic; font-size: 0.8em;
+    background: none; border-left: none; padding-top: 0.5em;
   }
   .compare-vs {
-    display: flex;
-    align-items: center;
-    font-weight: 800;
-    font-size: 1.2em;
-    color: var(--text-muted);
-    flex-shrink: 0;
+    display: flex; align-items: center;
+    font-weight: 800; font-size: 1.2em;
+    color: var(--text-muted); flex-shrink: 0;
+  }
+
+  /* ===== STACK DIAGRAM ===== */
+  .stack-diagram {
+    max-width: 550px;
+    margin: 2em auto;
+  }
+  .stack-layer {
+    display: flex; align-items: center; gap: 1em;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1em 1.2em;
+    transition: border-color 0.3s ease;
+  }
+  .stack-layer:hover { border-color: var(--accent); }
+  .stack-layer a { color: var(--accent); }
+  .layer-icon { font-size: 1.5em; flex-shrink: 0; }
+  .layer-content { display: flex; flex-direction: column; gap: 2px; }
+  .layer-content strong { font-size: 0.95em; color: var(--text); }
+  .layer-content span { font-size: 0.8em; color: var(--text-muted); }
+  .stack-connector {
+    text-align: center; color: var(--accent);
+    font-size: 1.2em; padding: 0.3em 0; opacity: 0.4;
   }
 
   /* ===== SCROLL REVEAL ===== */
   .reveal {
-    opacity: 0;
-    transform: translateY(20px);
+    opacity: 0; transform: translateY(20px);
     transition: all 0.6s ease;
   }
-  .reveal.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
 
   /* ===== RESPONSIVE ===== */
   @media (max-width: 768px) {
     .hero-inner {
       flex-direction: column-reverse;
-      text-align: center;
-      gap: 2em;
+      text-align: center; gap: 2em;
     }
-    .hero-title {
-      font-size: 2em !important;
-    }
-    .hero-sub {
-      margin: 0 auto;
-    }
-    .phone-frame {
-      width: 240px;
-    }
-    .examples-grid {
-      grid-template-columns: 1fr;
-    }
-    .brain-section {
-      flex-direction: column;
-    }
-    .comparison {
-      flex-direction: column;
-    }
-    .compare-vs {
-      justify-content: center;
-      padding: 0.5em 0;
-    }
-    .flow-container {
-      flex-wrap: nowrap;
-      padding-bottom: 1em;
-    }
-    .flow-step {
-      min-width: 100px;
-    }
+    .hero-title { font-size: 2em !important; }
+    .hero-sub { margin: 0 auto; }
+    .phone-frame { width: 240px; }
+    .comparison { flex-direction: column; }
+    .compare-vs { justify-content: center; padding: 0.5em 0; }
+    .timeline { padding-left: 1.5em; }
+    .mindset-card { flex-direction: column; gap: 0.5em; }
   }
 `}</style>
 
 <script>{`
-  // Scroll-triggered reveal animations
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-      }
+      if (entry.isIntersecting) entry.target.classList.add('visible');
     });
   }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
-
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-  // Brain node hover/pulse on scroll
-  const brainNodes = document.querySelectorAll('.brain-node');
-  let activeNode = 0;
-  setInterval(() => {
-    brainNodes.forEach(n => n.querySelector('.node-dot').style.borderColor = 'var(--border)');
-    if (brainNodes[activeNode]) {
-      brainNodes[activeNode].querySelector('.node-dot').style.borderColor = 'var(--accent)';
-      brainNodes[activeNode].querySelector('.node-dot').style.boxShadow = '0 0 15px rgba(200,255,0,0.2)';
-      setTimeout(() => {
-        if (brainNodes[activeNode]) {
-          brainNodes[activeNode].querySelector('.node-dot').style.boxShadow = 'none';
-        }
-      }, 1500);
-    }
-    activeNode = (activeNode + 1) % brainNodes.length;
-  }, 2000);
+  // Forum tab switching
+  document.querySelectorAll('.forum-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.forum-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
 `}</script>
