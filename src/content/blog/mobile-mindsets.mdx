@@ -39,6 +39,8 @@ import FlowDiagram from '../../components/blog/FlowDiagram.astro';
             </div>
           </div>
           <div class="dc-record-bar">
+            <div class="dc-record-wave"></div>
+            <div class="dc-record-inner">
             <div class="dc-record-lock">Release to Lock</div>
             <div class="dc-record-bottom">
               <div class="dc-record-trash">
@@ -55,6 +57,7 @@ import FlowDiagram from '../../components/blog/FlowDiagram.astro';
                   <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </div>
+            </div>
             </div>
           </div>
         </div>
@@ -328,47 +331,62 @@ It started with one voice message. Now it runs a life.
 
   /* ===== RECORDING BAR ===== */
   .dc-record-bar {
-    background: linear-gradient(180deg, #36389a 0%, #5865f2 40%, #7289da 100%);
-    padding: 12px 16px 14px;
+    position: relative;
+    padding: 0;
+    overflow: hidden;
     border-radius: 0 0 22px 22px;
+  }
+  .dc-record-wave {
+    position: absolute;
+    bottom: 0;
+    left: -10%;
+    width: 120%;
+    height: 100%;
+    background: radial-gradient(ellipse at 50% 120%, #3a3ab8 0%, #2a2a7a 40%, transparent 72%);
+  }
+  .dc-record-inner {
+    position: relative;
+    z-index: 1;
+    padding: 16px 14px 16px;
   }
   .dc-record-lock {
     text-align: center;
-    font-size: 0.65em;
-    color: rgba(255,255,255,0.7);
-    margin-bottom: 10px;
+    font-size: 0.6em;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 12px;
     font-weight: 500;
+    letter-spacing: 0.01em;
   }
   .dc-record-bottom {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 8px;
   }
   .dc-record-trash {
-    width: 36px;
-    height: 36px;
-    background: rgba(0,0,0,0.25);
+    width: 34px;
+    height: 34px;
+    background: rgba(0,0,0,0.3);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
   }
   .dc-record-timer {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     background: rgba(0,0,0,0.3);
     border-radius: 20px;
-    padding: 6px 14px;
+    padding: 7px 14px;
     flex: 1;
-    margin: 0 10px;
-    justify-content: center;
   }
   .dc-record-dot {
     width: 8px;
     height: 8px;
     background: #ed4245;
     border-radius: 50%;
+    flex-shrink: 0;
     animation: recPulse 1s ease-in-out infinite;
   }
   @keyframes recPulse {
@@ -376,20 +394,20 @@ It started with one voice message. Now it runs a life.
     50% { opacity: 0.3; }
   }
   .dc-record-time {
-    font-size: 0.8em;
+    font-size: 0.78em;
     color: white;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
   }
   .dc-record-send {
-    width: 36px;
-    height: 36px;
-    background: #5865f2;
+    width: 34px;
+    height: 34px;
+    background: rgba(0,0,0,0.3);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 8px rgba(88,101,242,0.4);
+    flex-shrink: 0;
   }
   .dc-messages {
     padding: 10px 0;
