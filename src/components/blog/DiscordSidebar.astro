@@ -1,0 +1,380 @@
+---
+// Discord Mobile Sidebar simulation
+// Modeled from actual screenshots
+---
+
+<div class="ds-wrap">
+  <div class="ds-phone">
+    <div class="ds-notch"></div>
+    <div class="ds-screen">
+      <!-- Server header -->
+      <div class="ds-server-header">
+        <div class="ds-server-name">Justin HQ <span class="ds-chevron">›</span></div>
+      </div>
+
+      <!-- Channel list -->
+      <div class="ds-channels">
+        <!-- HQ section -->
+        <div class="ds-category">HQ</div>
+        <div class="ds-channel"><span class="ds-hash">#</span> main-chat</div>
+
+        <!-- Infra -->
+        <div class="ds-forum">
+          <svg class="ds-forum-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12v1H2V4zm0 3.5h12v1H2v-1zm0 3.5h12v1H2v-1z" fill="currentColor"/></svg>
+          infra
+        </div>
+        <div class="ds-thread-group">
+          <div class="ds-thread">
+            <span class="ds-tree"></span>
+            🧠 Mindset orchestration
+          </div>
+          <div class="ds-thread">
+            <span class="ds-tree"></span>
+            ⏳ iMessage bridge setup
+          </div>
+        </div>
+
+        <!-- Design Engineer -->
+        <div class="ds-forum">
+          <svg class="ds-forum-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12v1H2V4zm0 3.5h12v1H2v-1zm0 3.5h12v1H2v-1z" fill="currentColor"/></svg>
+          design-engineer
+          <span class="ds-badge">1</span>
+        </div>
+        <div class="ds-thread-group">
+          <div class="ds-thread ds-unread">
+            <span class="ds-tree"></span>
+            <span class="ds-unread-pip"></span>
+            📝 Rewrite blog post
+          </div>
+          <div class="ds-thread ds-selected">
+            <span class="ds-tree"></span>
+            📱 Mobile mindsets blog
+          </div>
+          <div class="ds-thread">
+            <span class="ds-tree"></span>
+            🧬 GoL series iteration
+          </div>
+          <div class="ds-thread">
+            <span class="ds-tree"></span>
+            🏁 Marble Race Series
+          </div>
+          <div class="ds-thread">
+            <span class="ds-tree"></span>
+            🎬 Territory Capture series
+          </div>
+        </div>
+
+        <!-- PA -->
+        <div class="ds-forum">
+          <svg class="ds-forum-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12v1H2V4zm0 3.5h12v1H2v-1zm0 3.5h12v1H2v-1z" fill="currentColor"/></svg>
+          pa
+          <span class="ds-badge">1</span>
+        </div>
+        <div class="ds-thread-group">
+          <div class="ds-thread">
+            <span class="ds-tree"></span>
+            👋 Group meetup message
+          </div>
+          <div class="ds-thread ds-unread">
+            <span class="ds-tree"></span>
+            <span class="ds-unread-pip"></span>
+            ✅ Pharmacy refill submitted
+            <span class="ds-mention">@</span>
+          </div>
+          <div class="ds-thread">
+            <span class="ds-tree"></span>
+            ✅ Hedgehog sent
+          </div>
+          <div class="ds-thread">
+            <span class="ds-tree"></span>
+            ✍️ Email draft
+          </div>
+        </div>
+
+        <!-- Finance -->
+        <div class="ds-forum">
+          <svg class="ds-forum-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12v1H2V4zm0 3.5h12v1H2v-1zm0 3.5h12v1H2v-1z" fill="currentColor"/></svg>
+          finance
+        </div>
+        <div class="ds-thread-group">
+          <div class="ds-thread">
+            <span class="ds-tree"></span>
+            💰 Zero unnecessary spend
+          </div>
+          <div class="ds-thread">
+            <span class="ds-tree"></span>
+            ⏳ Tax payment due Friday
+          </div>
+        </div>
+
+        <!-- Work -->
+        <div class="ds-forum">
+          <svg class="ds-forum-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12v1H2V4zm0 3.5h12v1H2v-1zm0 3.5h12v1H2v-1z" fill="currentColor"/></svg>
+          work
+        </div>
+        <div class="ds-thread-group">
+          <div class="ds-thread">
+            <span class="ds-tree"></span>
+            🎭 Product standup prep
+          </div>
+        </div>
+
+        <!-- Socials -->
+        <div class="ds-forum">
+          <svg class="ds-forum-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12v1H2V4zm0 3.5h12v1H2v-1zm0 3.5h12v1H2v-1z" fill="currentColor"/></svg>
+          socials
+        </div>
+        <div class="ds-thread-group">
+          <div class="ds-thread">
+            <span class="ds-tree"></span>
+            ⏳ X login automation wall
+          </div>
+          <div class="ds-thread">
+            <span class="ds-tree"></span>
+            📰 Hacker News
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom nav -->
+      <div class="ds-bottomnav">
+        <div class="ds-nav-item">
+          <span class="ds-nav-icon">🏠</span>
+          <span class="ds-nav-notif">7</span>
+        </div>
+        <div class="ds-nav-item">
+          <span class="ds-nav-icon">🔔</span>
+        </div>
+        <div class="ds-nav-item">
+          <div class="ds-nav-avatar">
+            <div class="ds-status-dot"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .ds-wrap {
+    display: flex;
+    justify-content: center;
+    margin: 2.5em 0;
+  }
+  .ds-phone {
+    width: 320px;
+    background: #111214;
+    border-radius: 36px;
+    padding: 12px;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.08),
+      0 24px 80px rgba(0,0,0,0.6),
+      0 8px 24px rgba(0,0,0,0.4);
+  }
+  .ds-notch {
+    width: 120px;
+    height: 28px;
+    background: #000;
+    border-radius: 0 0 18px 18px;
+    margin: 0 auto 4px;
+  }
+  .ds-screen {
+    background: #1e1f22;
+    border-radius: 24px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Server header */
+  .ds-server-header {
+    padding: 16px 16px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .ds-server-name {
+    font-size: 0.95em;
+    font-weight: 700;
+    color: #f2f3f5;
+    letter-spacing: -0.01em;
+  }
+  .ds-chevron {
+    color: #4e5058;
+    margin-left: 2px;
+  }
+
+  /* Channel list */
+  .ds-channels {
+    padding: 8px 0;
+    max-height: 420px;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .ds-channels::-webkit-scrollbar { display: none; }
+
+  .ds-category {
+    font-size: 0.6em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #4e5058;
+    padding: 14px 16px 4px;
+  }
+  .ds-channel {
+    padding: 7px 16px;
+    font-size: 0.85em;
+    color: #80848e;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    border-radius: 0;
+  }
+  .ds-hash {
+    color: #4e5058;
+    margin-right: 6px;
+    font-size: 1.1em;
+    font-weight: 400;
+  }
+
+  /* Forum channels */
+  .ds-forum {
+    padding: 7px 16px;
+    font-size: 0.82em;
+    color: #4e5058;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ds-forum-icon {
+    color: #4e5058;
+    flex-shrink: 0;
+    opacity: 0.7;
+  }
+  .ds-badge {
+    margin-left: auto;
+    font-size: 0.85em;
+    color: #4e5058;
+  }
+
+  /* Thread groups */
+  .ds-thread-group {
+    padding-left: 24px;
+  }
+  .ds-thread {
+    padding: 3px 12px 3px 0;
+    font-size: 0.8em;
+    color: #4e5058;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    position: relative;
+    line-height: 1.7;
+    border-radius: 4px;
+    margin: 0 8px;
+    padding-left: 4px;
+  }
+  .ds-thread.ds-selected {
+    background: rgba(255,255,255,0.06);
+    color: #f2f3f5;
+    font-weight: 500;
+  }
+  .ds-thread.ds-unread {
+    color: #f2f3f5;
+    font-weight: 600;
+  }
+  .ds-tree {
+    display: inline-block;
+    width: 14px;
+    height: 18px;
+    margin-right: 4px;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .ds-tree::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 0;
+    width: 8px;
+    height: 10px;
+    border-left: 1.5px solid #3f4147;
+    border-bottom: 1.5px solid #3f4147;
+    border-radius: 0 0 0 4px;
+  }
+  .ds-unread-pip {
+    width: 8px;
+    height: 8px;
+    background: #f2f3f5;
+    border-radius: 50%;
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .ds-mention {
+    background: #da373c;
+    color: white;
+    font-size: 0.6em;
+    width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  /* Bottom nav */
+  .ds-bottomnav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 12px 0;
+    border-top: 1px solid rgba(255,255,255,0.04);
+    background: #1e1f22;
+  }
+  .ds-nav-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ds-nav-icon {
+    font-size: 1.3em;
+    filter: grayscale(1) brightness(0.5);
+  }
+  .ds-nav-notif {
+    position: absolute;
+    top: -4px;
+    right: -8px;
+    background: #da373c;
+    color: white;
+    font-size: 0.5em;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+  }
+  .ds-nav-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #5865f2;
+    position: relative;
+  }
+  .ds-status-dot {
+    position: absolute;
+    bottom: -1px;
+    right: -1px;
+    width: 10px;
+    height: 10px;
+    background: #23a55a;
+    border-radius: 50%;
+    border: 2.5px solid #1e1f22;
+  }
+</style>

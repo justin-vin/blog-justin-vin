@@ -1,0 +1,201 @@
+---
+interface Props {
+  user: string;
+  duration: string;
+  transcript?: string;
+  color?: string;
+  compact?: boolean;
+}
+const { user, duration, transcript, color = 'blurple', compact = false } = Astro.props;
+const initial = user[0].toUpperCase();
+
+// Generate deterministic-looking waveform bars
+const barCount = compact ? 40 : 48;
+const bars: number[] = [];
+for (let i = 0; i < barCount; i++) {
+  // Create a natural voice waveform shape: low→rise→peak→fall→small peaks→taper
+  const t = i / barCount;
+  const base = Math.sin(t * Math.PI) * 0.6;
+  const detail = Math.sin(t * 12) * 0.15 + Math.sin(t * 23) * 0.1;
+  const noise = ((i * 7 + 13) % 17) / 17 * 0.2;
+  bars.push(Math.max(0.08, Math.min(1, base + detail + noise)));
+}
+---
+
+<div class={`dcv-wrap ${compact ? 'dcv-compact' : ''}`}>
+  {!compact && (
+    <div class="dcv-msg">
+      <div class="dcv-avatar">{initial}</div>
+      <div class="dcv-body">
+        <div class="dcv-header">
+          <span class="dcv-name">{user}</span>
+          <span class="dcv-time">Today at 10:23 AM</span>
+        </div>
+        <div class="dcv-player">
+          <button class="dcv-play" aria-label="Play voice message">
+            <svg width="12" height="14" viewBox="0 0 12 14" fill="none">
+              <path d="M0 0L12 7L0 14V0Z" fill="currentColor"/>
+            </svg>
+          </button>
+          <div class="dcv-waveform">
+            {bars.map((h, i) => (
+              <div class="dcv-bar" style={`height: ${h * 100}%; animation-delay: ${i * 0.03}s`} />
+            ))}
+          </div>
+          <span class="dcv-duration">{duration}</span>
+        </div>
+        {transcript && <p class="dcv-transcript">"{transcript}"</p>}
+      </div>
+    </div>
+  )}
+  {compact && (
+    <div class="dcv-inline">
+      <div class="dcv-player dcv-player-sm">
+        <button class="dcv-play dcv-play-sm" aria-label="Play voice message">
+          <svg width="10" height="12" viewBox="0 0 12 14" fill="none">
+            <path d="M0 0L12 7L0 14V0Z" fill="currentColor"/>
+          </svg>
+        </button>
+        <div class="dcv-waveform dcv-waveform-sm">
+          {bars.map((h, i) => (
+            <div class="dcv-bar dcv-bar-sm" style={`height: ${h * 100}%; animation-delay: ${i * 0.03}s`} />
+          ))}
+        </div>
+        <span class="dcv-duration">{duration}</span>
+      </div>
+      {transcript && <p class="dcv-transcript dcv-transcript-sm">"{transcript}"</p>}
+    </div>
+  )}
+</div>
+
+<style>
+  .dcv-wrap {
+    margin: 0;
+  }
+  .dcv-compact {
+    margin: 0;
+  }
+
+  /* Full voice message */
+  .dcv-msg {
+    display: flex;
+    gap: 12px;
+    padding: 8px 16px;
+    align-items: flex-start;
+  }
+  .dcv-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #5865f2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85em;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+  }
+  .dcv-body {
+    flex: 1;
+    min-width: 0;
+  }
+  .dcv-header {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .dcv-name {
+    font-size: 0.9em;
+    font-weight: 600;
+    color: #f2f3f5;
+  }
+  .dcv-time {
+    font-size: 0.65em;
+    color: #72767d;
+  }
+
+  /* Player bar */
+  .dcv-player {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #2b2d31;
+    border-radius: 22px;
+    padding: 10px 14px;
+    max-width: 360px;
+  }
+  .dcv-player-sm {
+    padding: 8px 12px;
+    border-radius: 18px;
+    max-width: 320px;
+  }
+  .dcv-play {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #5865f2;
+    border: none;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s;
+    padding-left: 3px;
+  }
+  .dcv-play:hover {
+    background: #4752c4;
+  }
+  .dcv-play-sm {
+    width: 26px;
+    height: 26px;
+    padding-left: 2px;
+  }
+
+  /* Waveform */
+  .dcv-waveform {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex: 1;
+    height: 28px;
+  }
+  .dcv-waveform-sm {
+    height: 22px;
+    gap: 1.5px;
+  }
+  .dcv-bar {
+    width: 3px;
+    min-height: 3px;
+    background: #5865f2;
+    border-radius: 2px;
+    flex-shrink: 0;
+    transition: opacity 0.3s;
+  }
+  .dcv-bar-sm {
+    width: 2.5px;
+    min-height: 2px;
+  }
+  .dcv-duration {
+    font-size: 0.7em;
+    color: #b5bac1;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Transcript */
+  .dcv-transcript {
+    font-size: 0.82em;
+    color: #8e9297;
+    font-style: italic;
+    margin: 8px 0 0;
+    line-height: 1.4;
+  }
+  .dcv-transcript-sm {
+    font-size: 0.78em;
+    margin: 6px 0 0;
+  }
+</style>

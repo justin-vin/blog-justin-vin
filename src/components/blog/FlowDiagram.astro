@@ -1,0 +1,108 @@
+---
+// Flow diagram showing voice → transcription → routing → thread → result
+const steps = [
+  { num: 1, icon: '🎙️', label: 'Voice In', detail: 'Hold mic button on Discord mobile. Say what you need. Release. Four seconds.' },
+  { num: 2, icon: '📝', label: 'Transcribed', detail: 'Whisper converts speech to text. Handles accents, noise, mid-sentence corrections.' },
+  { num: 3, icon: '🧠', label: 'I Decide', detail: 'New task or existing? Which mode? Does it need a thread at all, or just a quick answer?' },
+  { num: 4, icon: '🔀', label: 'Thread Opens', detail: 'Full bootstrap: the request, relevant memories, what "done" looks like. The mode wakes up ready.' },
+  { num: 5, icon: '⚡', label: 'Work Happens', detail: 'Browsing, emailing, coding, analyzing. Updates in the thread. Title renames as status changes.' },
+  { num: 6, icon: '📱', label: 'Check In', detail: 'Notification or a glance at the sidebar. Thread title tells the state. Tap in only if needed.' },
+];
+---
+
+<div class="flow-scroll">
+  <div class="flow-track">
+    {steps.map((step, i) => (
+      <div class="flow-step">
+        <div class="flow-num">{step.num}</div>
+        <div class="flow-icon">{step.icon}</div>
+        <div class="flow-label">{step.label}</div>
+        <div class="flow-detail">{step.detail}</div>
+        {i < steps.length - 1 && (
+          <div class="flow-connector">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        )}
+      </div>
+    ))}
+  </div>
+</div>
+
+<style>
+  .flow-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    margin: 2em -1em;
+    padding: 1em;
+  }
+  .flow-scroll::-webkit-scrollbar { display: none; }
+
+  .flow-track {
+    display: flex;
+    gap: 0;
+    min-width: max-content;
+    padding-right: 2em;
+  }
+
+  .flow-step {
+    min-width: 240px;
+    max-width: 280px;
+    flex-shrink: 0;
+    background: var(--surface, #141414);
+    border: 1px solid var(--border, #222);
+    border-radius: 14px;
+    padding: 1.6em 1.4em;
+    scroll-snap-align: start;
+    position: relative;
+    margin-right: 2.5em;
+  }
+  .flow-step:last-child {
+    margin-right: 0;
+  }
+
+  .flow-num {
+    position: absolute;
+    top: -11px;
+    left: 16px;
+    background: var(--accent, #c8ff00);
+    color: #000;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7em;
+    font-weight: 800;
+  }
+
+  .flow-icon {
+    font-size: 2em;
+    margin-bottom: 0.4em;
+    line-height: 1;
+  }
+  .flow-label {
+    font-weight: 700;
+    font-size: 1em;
+    margin-bottom: 0.5em;
+    color: var(--text, #e8e8e8);
+  }
+  .flow-detail {
+    font-size: 0.82em;
+    color: var(--text-muted, #777);
+    line-height: 1.55;
+  }
+
+  .flow-connector {
+    position: absolute;
+    right: -1.8em;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--accent, #c8ff00);
+    opacity: 0.4;
+  }
+</style>

@@ -1,0 +1,95 @@
+---
+interface Props {
+  user: string;
+  text: string;
+  bot?: boolean;
+}
+const { user, text, bot = false } = Astro.props;
+const initial = user[0].toUpperCase();
+const isBot = bot;
+---
+
+<div class="dc-msg">
+  <div class={`dc-avatar ${isBot ? 'dc-avatar-bot' : 'dc-avatar-user'}`}>
+    {initial}
+  </div>
+  <div class="dc-msg-body">
+    <div class="dc-msg-header">
+      <span class={`dc-username ${isBot ? 'dc-username-bot' : ''}`}>{user}</span>
+      {isBot && <span class="dc-bot-badge">BOT</span>}
+      <span class="dc-timestamp">Today at 10:23 AM</span>
+    </div>
+    <div class="dc-msg-text">{text}</div>
+  </div>
+</div>
+
+<style>
+  .dc-msg {
+    display: flex;
+    gap: 12px;
+    padding: 4px 16px;
+    align-items: flex-start;
+  }
+  .dc-msg:hover {
+    background: rgba(255,255,255,0.02);
+  }
+  .dc-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85em;
+    font-weight: 700;
+    flex-shrink: 0;
+    color: white;
+  }
+  .dc-avatar-user {
+    background: #5865f2;
+  }
+  .dc-avatar-bot {
+    background: var(--accent, #c8ff00);
+    color: #000;
+  }
+  .dc-msg-body {
+    flex: 1;
+    min-width: 0;
+  }
+  .dc-msg-header {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 2px;
+  }
+  .dc-username {
+    font-size: 0.9em;
+    font-weight: 600;
+    color: #f2f3f5;
+  }
+  .dc-username-bot {
+    color: var(--accent, #c8ff00);
+  }
+  .dc-bot-badge {
+    background: #5865f2;
+    color: white;
+    font-size: 0.55em;
+    padding: 1.5px 5px;
+    border-radius: 3px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    position: relative;
+    top: -1px;
+  }
+  .dc-timestamp {
+    font-size: 0.65em;
+    color: #72767d;
+    font-weight: 400;
+  }
+  .dc-msg-text {
+    font-size: 0.9em;
+    color: #dbdee1;
+    line-height: 1.45;
+  }
+</style>
